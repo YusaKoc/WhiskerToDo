@@ -15,6 +15,7 @@ class _TodayPageState extends State<TodayPage> {
 
   List<int> selectedIds = [];
   var tfMessageController = TextEditingController();
+  var tfEditMessageController = TextEditingController();
 
   late SharedPreferences _prefs;
   late bool isChecked = false;
@@ -25,7 +26,6 @@ class _TodayPageState extends State<TodayPage> {
     _loadCheckboxState();
   }
 
-
   _loadCheckboxState() async {
     _prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -33,7 +33,6 @@ class _TodayPageState extends State<TodayPage> {
       selectedIds = _prefs.getStringList('selectedIds')?.map((id) => int.tryParse(id) ?? 0).toList() ?? [];
     });
   }
-
 
   _saveCheckboxState(int messageId, bool value) async {
     if (value) {
@@ -45,7 +44,6 @@ class _TodayPageState extends State<TodayPage> {
     _prefs.setStringList('selectedIds', selectedIds.map((id) => id.toString()).toList());
   }
 
-
   Future<List<today>> allTodayShow() async {
     var todayList = await Todaydao().allToday();
     return todayList;
@@ -53,10 +51,14 @@ class _TodayPageState extends State<TodayPage> {
 
   Future<void> addMessageTodayShow(String mesajtoday) async {
     await Todaydao().addMessageToday(mesajtoday);
-
   }
+
   Future<void> deleteMessageToday(int mesaj_id) async {
     await Todaydao().deleteMessageToday(mesaj_id);
+  }
+
+  Future<void> todayMessageEditor(int mesaj_id, String newMessage) async {
+    await Todaydao().messageEditor(mesaj_id, newMessage);
   }
 
   @override
@@ -68,29 +70,18 @@ class _TodayPageState extends State<TodayPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Align(alignment:Alignment(0.2,0),child: Text("Daily To Do's",style: TextStyle(color: Colors.pink,fontWeight: FontWeight.bold,fontSize: ekranGenisligi/18),)),
+        title: Text("Daily To Do's", style: TextStyle(color: Colors.pink, fontWeight: FontWeight.bold, fontSize: ekranGenisligi / 18),),
         backgroundColor: Color.fromARGB(255, 248, 235, 223),
-        flexibleSpace: Container(
-          child: Align(
-            alignment: Alignment(-1.5,0),
-            child: Image.asset(
-              "assets/9.png",
-              width: 190,
-              height: 80,
-              fit: BoxFit.contain,
-            ),
-          ),
-        ),
         actions: [
           Row(
             children: [
-              Text("Add Task",style: TextStyle(color: Colors.pink,fontWeight: FontWeight.bold),),
+              Text("Add Task", style: TextStyle(color: Colors.pink, fontWeight: FontWeight.bold),),
               IconButton(
                 icon: Icon(Icons.add),
-                onPressed: (){
+                onPressed: () {
                   showDialog(
                       context: context,
-                      builder: (BuildContext context){
+                      builder: (BuildContext context) {
                         return AlertDialog(
                           title: Text("Add Task"),
                           content: TextField(
@@ -100,29 +91,29 @@ class _TodayPageState extends State<TodayPage> {
                             ),
                           ),
                           actions: [
-                            TextButton(onPressed: (){Navigator.pop(context);}, child: Text("Cancel")),
+                            TextButton(onPressed: () { Navigator.pop(context); }, child: Text("Cancel")),
                             TextButton(
                               child: Text("Add"),
-                              onPressed: (){
+                              onPressed: () {
                                 String messageT = tfMessageController.text.trim();
-                                if(messageT.isNotEmpty){
+                                if (messageT.isNotEmpty) {
                                   setState(() {
                                     addMessageTodayShow(messageT);
                                     tfMessageController.clear();
                                     Navigator.pop(context);
                                   });
-                                }else{
+                                } else {
                                   showDialog(
-                                    context: context,
-                                    builder: (BuildContext context){
-                                      return AlertDialog(
-                                        title: Text("Warning"),
-                                        content: Text("Please enter a task"),
-                                        actions: [
-                                          TextButton(onPressed: (){Navigator.pop(context);}, child: Text("OK")),
-                                        ],
-                                      );
-                                    }
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: Text("Warning"),
+                                          content: Text("Please enter a task"),
+                                          actions: [
+                                            TextButton(onPressed: () { Navigator.pop(context); }, child: Text("OK")),
+                                          ],
+                                        );
+                                      }
                                   );
                                 }
                               },
@@ -181,32 +172,81 @@ class _TodayPageState extends State<TodayPage> {
                         onPressed: () {
                           setState(() {
                             showDialog(
-                              context: context,
-                              builder: (BuildContext context){
-                                return AlertDialog(
-                                  title: Text("Actions"),
-                                  content: SizedBox(
-                                    height: 50,
-                                    child: Center(
-                                      child: Text(
-                                        "${message.mesajtoday}",
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text("Actions"),
+                                    content: SizedBox(
+                                      height: 50,
+                                      child: Center(
+                                        child: Text(
+                                          "${message.mesajtoday}",
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  actions: [
-                                    TextButton(onPressed: (){Navigator.pop(context);}, child: Text("Cancel")),
-                                    TextButton(
-                                      onPressed: (){
-                                        setState(() {
-                                          deleteMessageToday(message.mesaj_id);
+                                    actions: [
+                                      TextButton(onPressed: () { Navigator.pop(context); }, child: Text("Cancel")),
+                                      TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            deleteMessageToday(message.mesaj_id);
+                                            Navigator.pop(context);
+                                          });
+                                        },
+                                        child: Text("Delete Task"),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          tfEditMessageController.text = message.mesajtoday;
                                           Navigator.pop(context);
-                                        });
-                                      },
-                                      child: Text("Delete Task"),
-                                    ),
-                                  ],
-                                );
-                              }
+                                          showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: Text("Edit Task"),
+                                                  content: TextField(
+                                                    controller: tfEditMessageController,
+                                                    decoration: InputDecoration(
+                                                      labelText: "Edit Task..",
+                                                    ),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(onPressed: () { Navigator.pop(context); }, child: Text("Cancel")),
+                                                    TextButton(
+                                                      child: Text("Save"),
+                                                      onPressed: () {
+                                                        String newMessage = tfEditMessageController.text.trim();
+                                                        if (newMessage.isNotEmpty) {
+                                                          setState(() {
+                                                            todayMessageEditor(message.mesaj_id, newMessage);
+                                                            Navigator.pop(context);
+                                                          });
+                                                        } else {
+                                                          showDialog(
+                                                              context: context,
+                                                              builder: (BuildContext context) {
+                                                                return AlertDialog(
+                                                                  title: Text("Warning"),
+                                                                  content: Text("Please enter a task"),
+                                                                  actions: [
+                                                                    TextButton(onPressed: () { Navigator.pop(context); }, child: Text("OK")),
+                                                                  ],
+                                                                );
+                                                              }
+                                                          );
+                                                        }
+                                                      },
+                                                    ),
+                                                  ],
+                                                );
+                                              }
+                                          );
+                                        },
+                                        child: Text("Edit Task"),
+                                      ),
+                                    ],
+                                  );
+                                }
                             );
                           });
                         },

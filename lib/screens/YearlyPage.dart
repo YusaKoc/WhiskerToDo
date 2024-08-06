@@ -14,6 +14,7 @@ class _YearlyPageState extends State<YearlyPage> {
 
   List<int> selectedIds3 = [];
   var tfMessageController = TextEditingController();
+  var tfEditMessageController = TextEditingController();
 
   late SharedPreferences _prefs;
   late bool isChecked = false;
@@ -58,6 +59,10 @@ class _YearlyPageState extends State<YearlyPage> {
     await Yeardao().deleteMessageYearly(yearly_id);
   }
 
+  Future<void> yearlyMessageEditor(int yearly_id, String newMessage) async {
+    await Yeardao().messageEditor(yearly_id, newMessage);
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -67,19 +72,8 @@ class _YearlyPageState extends State<YearlyPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Align(alignment:Alignment(0.2,0),child: Text("Yearly To Do's",style: TextStyle(color: Colors.pink,fontWeight: FontWeight.bold,fontSize: ekranGenisligi/18),)),
+        title: Text("Yearly To Do's",style: TextStyle(color: Colors.pink,fontWeight: FontWeight.bold,fontSize: ekranGenisligi/18),),
         backgroundColor: Color.fromARGB(255, 248, 235, 223),
-        flexibleSpace: Container(
-          child: Align(
-            alignment: Alignment(-1.5,0),
-            child: Image.asset(
-              "assets/7.png",
-              width: 190,
-              height: 80,
-              fit: BoxFit.contain,
-            ),
-          ),
-        ),
         actions: [
           Row(
             children: [
@@ -183,7 +177,7 @@ class _YearlyPageState extends State<YearlyPage> {
                                 context: context,
                                 builder: (BuildContext context){
                                   return AlertDialog(
-                                    title: Text("Actions"),
+                                    title: Text("Edit"),
                                     content: SizedBox(
                                       height: 50,
                                       child: Center(
@@ -202,6 +196,55 @@ class _YearlyPageState extends State<YearlyPage> {
                                           });
                                         },
                                         child: Text("Delete Task"),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          tfEditMessageController.text = message.yearly_mesaj;
+                                          Navigator.pop(context);
+                                          showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: Text("Edit Task"),
+                                                  content: TextField(
+                                                    controller: tfEditMessageController,
+                                                    decoration: InputDecoration(
+                                                      labelText: "Edit Task..",
+                                                    ),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(onPressed: () { Navigator.pop(context); }, child: Text("Cancel")),
+                                                    TextButton(
+                                                      child: Text("Save"),
+                                                      onPressed: () {
+                                                        String newMessage = tfEditMessageController.text.trim();
+                                                        if (newMessage.isNotEmpty) {
+                                                          setState(() {
+                                                            yearlyMessageEditor(message.yearly_id, newMessage);
+                                                            Navigator.pop(context);
+                                                          });
+                                                        } else {
+                                                          showDialog(
+                                                              context: context,
+                                                              builder: (BuildContext context) {
+                                                                return AlertDialog(
+                                                                  title: Text("Warning"),
+                                                                  content: Text("Please enter a task"),
+                                                                  actions: [
+                                                                    TextButton(onPressed: () { Navigator.pop(context); }, child: Text("OK")),
+                                                                  ],
+                                                                );
+                                                              }
+                                                          );
+                                                        }
+                                                      },
+                                                    ),
+                                                  ],
+                                                );
+                                              }
+                                          );
+                                        },
+                                        child: Text("Edit Task"),
                                       ),
                                     ],
                                   );

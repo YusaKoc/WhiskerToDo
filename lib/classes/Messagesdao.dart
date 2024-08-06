@@ -23,6 +23,20 @@ class Todaydao {
 
   }
 
+  Future<void> messageEditor(int mesaj_id, String newMessage) async {
+    var db = await DatabaseHelper.databaseAccess();
+
+    var informations = Map<String, dynamic>();
+    informations["mesajtoday"] = newMessage;
+
+    await db.update(
+      "today",
+      informations,
+      where: "mesaj_id = ?",
+      whereArgs: [mesaj_id],
+    );
+  }
+
 
   Future<void> deleteMessageToday(int mesaj_id,) async {
     var db = await DatabaseHelper.databaseAccess();
@@ -54,6 +68,20 @@ class Monthdao {
 
   }
 
+  Future<void> messageEditor(int monthly_id, String newMessage) async {
+    var db = await DatabaseHelper.databaseAccess();
+
+    var informations = Map<String, dynamic>();
+    informations["monthlymesaj"] = newMessage;
+
+    await db.update(
+      "monthly",
+      informations,
+      where: "monthly_id = ?",
+      whereArgs: [monthly_id],
+    );
+  }
+
 
   Future<void> deleteMessageMonthly(int monthly_id,) async {
     var db = await DatabaseHelper.databaseAccess();
@@ -83,6 +111,20 @@ class Yeardao {
 
     await db.insert("yearly", informations);
 
+  }
+
+  Future<void> messageEditor(int yearly_id, String newMessage) async {
+    var db = await DatabaseHelper.databaseAccess();
+
+    var informations = Map<String, dynamic>();
+    informations["yearly_mesaj"] = newMessage;
+
+    await db.update(
+      "yearly",
+      informations,
+      where: "yearly_id = ?",
+      whereArgs: [yearly_id],
+    );
   }
 
 

@@ -14,6 +14,7 @@ class _MonthlyPageState extends State<MonthlyPage> {
 
   List<int> selectedIds2 = [];
   var tfMessageController = TextEditingController();
+  var tfEditMessageController = TextEditingController();
 
   late SharedPreferences _prefs;
   late bool isChecked = false;
@@ -58,6 +59,10 @@ class _MonthlyPageState extends State<MonthlyPage> {
     await Monthdao().deleteMessageMonthly(monthly_id);
   }
 
+  Future<void> monthMessageEditor(int monthly_id, String newMessage) async {
+    await Monthdao().messageEditor(monthly_id, newMessage);
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -67,19 +72,8 @@ class _MonthlyPageState extends State<MonthlyPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Align(alignment:Alignment(0.2,0),child: Text("Month To Do's",style: TextStyle(color: Colors.pink,fontWeight: FontWeight.bold,fontSize: ekranGenisligi/18),)),
+        title: Text("Month To Do's",style: TextStyle(color: Colors.pink,fontWeight: FontWeight.bold,fontSize: ekranGenisligi/18),),
         backgroundColor: Color.fromARGB(255, 248, 235, 223),
-        flexibleSpace: Container(
-          child: Align(
-            alignment: Alignment(-1.5,0),
-            child: Image.asset(
-              "assets/8.png",
-              width: 190,
-              height: 80,
-              fit: BoxFit.contain,
-            ),
-          ),
-        ),
         actions: [
           Row(
             children: [
@@ -202,6 +196,55 @@ class _MonthlyPageState extends State<MonthlyPage> {
                                           });
                                         },
                                         child: Text("Delete Task"),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          tfEditMessageController.text = message.monthlymesaj;
+                                          Navigator.pop(context);
+                                          showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: Text("Edit Task"),
+                                                  content: TextField(
+                                                    controller: tfEditMessageController,
+                                                    decoration: InputDecoration(
+                                                      labelText: "Edit Task..",
+                                                    ),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(onPressed: () { Navigator.pop(context); }, child: Text("Cancel")),
+                                                    TextButton(
+                                                      child: Text("Save"),
+                                                      onPressed: () {
+                                                        String newMessage = tfEditMessageController.text.trim();
+                                                        if (newMessage.isNotEmpty) {
+                                                          setState(() {
+                                                            monthMessageEditor(message.monthly_id, newMessage);
+                                                            Navigator.pop(context);
+                                                          });
+                                                        } else {
+                                                          showDialog(
+                                                              context: context,
+                                                              builder: (BuildContext context) {
+                                                                return AlertDialog(
+                                                                  title: Text("Warning"),
+                                                                  content: Text("Please enter a task"),
+                                                                  actions: [
+                                                                    TextButton(onPressed: () { Navigator.pop(context); }, child: Text("OK")),
+                                                                  ],
+                                                                );
+                                                              }
+                                                          );
+                                                        }
+                                                      },
+                                                    ),
+                                                  ],
+                                                );
+                                              }
+                                          );
+                                        },
+                                        child: Text("Edit Task"),
                                       ),
                                     ],
                                   );
